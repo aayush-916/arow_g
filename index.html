@@ -1756,7 +1756,7 @@
       }
 
       makeTheme() {
-        const night = Math.random() < 0.45;
+        const night = Math.random() < 0.3;
         if (!night) {
           return {
             night: false,
@@ -1782,24 +1782,24 @@
         }
         return {
           night: true,
-          skyTop: "#172540",
-          skyMid: "#29486d",
-          skyBottom: "#4a6788",
-          sun: "#f7f1d0",
-          glow: "rgba(247, 241, 208, 0.22)",
-          mountainFar: "#485a86",
-          mountainNear: "#344668",
-          groundTop: "#5fa653",
-          groundBottom: "#2c4a2f",
-          grassEdge: "#8fd06a",
-          grassBlade: "rgba(20, 50, 25, 0.5)",
-          dirtTop: "#5a4530",
-          dirtMid: "#42301f",
-          dirtBottom: "#241a10",
-          haze: "rgba(90, 120, 160, 0.4)",
-          rayColor: "rgba(210, 225, 255, 0.05)",
-          cloud: "rgba(235,240,255,0.28)",
-          treeLeaf: "#2b7748"
+          skyTop: "#1e3057",
+          skyMid: "#3a5d8f",
+          skyBottom: "#6d92bd",
+          sun: "#fbf6dc",
+          glow: "rgba(250, 245, 215, 0.4)",
+          mountainFar: "#5a6f9e",
+          mountainNear: "#43597f",
+          groundTop: "#74c468",
+          groundBottom: "#3d6b41",
+          grassEdge: "#a6e07f",
+          grassBlade: "rgba(28, 66, 34, 0.5)",
+          dirtTop: "#7a5a3a",
+          dirtMid: "#5d4128",
+          dirtBottom: "#3a2817",
+          haze: "rgba(130, 160, 200, 0.4)",
+          rayColor: "rgba(220, 232, 255, 0.07)",
+          cloud: "rgba(235,240,255,0.4)",
+          treeLeaf: "#357f54"
         };
       }
 
@@ -1979,8 +1979,11 @@
         this.sound.ensure();
         const point = this.getPointerPosition(event);
         const bow = active.getBowAnchor(this.aimPoint);
-        const radius = Math.max(90, active.size * 2);
-        if (Math.hypot(point.x - bow.x, point.y - bow.y) > radius) {
+        // Generous grab area: start a drag from anywhere near the active archer.
+        const nearBow = Math.hypot(point.x - bow.x, point.y - bow.y);
+        const nearBody = Math.hypot(point.x - active.x, point.y - (active.y - active.size));
+        const radius = Math.max(150, active.size * 3.4);
+        if (Math.min(nearBow, nearBody) > radius) {
           return;
         }
 
@@ -2627,6 +2630,44 @@
         // Green (weak) -> amber -> red (max).
         const hue = 130 - charge * 130;
         const chargeColor = "hsl(" + hue + ", 85%, 52%)";
+
+        // Predicted trajectory: simulate the real arrow physics (gravity, wind,
+        // drag) so the player can actually aim. Drawn as a fading dotted arc.
+        ctx.save();
+        const windAccel = this.wind.getAcceleration();
+        let px = bow.x;
+        let py = bow.y;
+        let pvx = nx * power;
+        let pvy = ny * power;
+        const step = 1 / 60;
+        const drag = 0.05;
+        for (let i = 0; i < 110; i += 1) {
+          pvy += this.gravity * step;
+          pvx += windAccel * step;
+          const dragFactor = Math.max(0, 1 - drag * step);
+          pvx *= dragFactor;
+          pvy *= dragFactor;
+          px += pvx * step;
+          py += pvy * step;
+          if (py >= this.terrain.getY(px) || px < -20 || px > this.width + 20 || py < -260) {
+            break;
+          }
+          if (i % 4 === 0) {
+            const fade = 1 - i / 110;
+            const r = 3.2 + fade * 1.6;
+            // High-contrast dot: dark halo + bright charge-colored core, visible on any sky.
+            ctx.globalAlpha = 0.5 + fade * 0.4;
+            ctx.fillStyle = "rgba(20, 16, 10, 0.55)";
+            ctx.beginPath();
+            ctx.arc(px, py, r + 1.4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = chargeColor;
+            ctx.beginPath();
+            ctx.arc(px, py, r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        ctx.restore();
 
         ctx.save();
 
