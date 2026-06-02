@@ -1,0 +1,211 @@
+:root {
+  color-scheme: light;
+  --bg-top: #f6efe2;
+  --bg-bottom: #c8d8a8;
+  --panel: rgba(255, 248, 236, 0.88);
+  --panel-border: rgba(79, 58, 31, 0.18);
+  --text: #2f2416;
+  --muted: #6e5c44;
+  --p1: #d95d39;
+  --p2: #2e7d5b;
+  --health-back: rgba(63, 48, 27, 0.14);
+  --shadow: 0 10px 30px rgba(60, 45, 25, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  overflow: hidden;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.6), transparent 32%),
+    linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+  color: var(--text);
+}
+
+body {
+  touch-action: none;
+}
+
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  gap: 10px;
+}
+
+.hud {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.player-panel,
+.center-panel,
+.overlay-card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+.player-panel {
+  padding: 10px 12px;
+}
+
+.player-label,
+.turn-badge,
+.overlay-kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+  font-size: 0.72rem;
+}
+
+.health-track {
+  margin: 8px 0 6px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--health-back);
+  overflow: hidden;
+}
+
+.health-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  transition: width 220ms ease;
+}
+
+.health-fill-p1 {
+  background: linear-gradient(90deg, #f3a34f, var(--p1));
+}
+
+.health-fill-p2 {
+  background: linear-gradient(90deg, #68c98b, var(--p2));
+}
+
+.health-value,
+.hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.center-panel {
+  padding: 10px 14px;
+  text-align: center;
+  min-width: min(34vw, 240px);
+}
+
+.turn-badge {
+  font-size: 0.85rem;
+}
+
+.hint {
+  margin-top: 6px;
+  max-width: 28ch;
+}
+
+.game-shell {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  background: linear-gradient(180deg, #b8dcf5 0%, #e2f3ff 55%, #a7cf81 55%, #84b462 100%);
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(31, 26, 18, 0.36);
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.overlay-card {
+  text-align: center;
+  padding: 20px;
+  min-width: min(86vw, 320px);
+}
+
+.overlay-card h1 {
+  margin: 10px 0 16px;
+  font-size: clamp(1.5rem, 5vw, 2.4rem);
+}
+
+button {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 22px;
+  font: inherit;
+  font-weight: 800;
+  color: #fff9f0;
+  background: linear-gradient(135deg, #6b4f2a, #8e6738);
+  box-shadow: 0 10px 22px rgba(79, 58, 31, 0.22);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 900px) {
+  .hud {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .center-panel {
+    grid-column: 1 / -1;
+    order: 3;
+    min-width: 0;
+  }
+
+  .hint {
+    max-width: none;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .app {
+    gap: 8px;
+  }
+
+  .player-panel,
+  .center-panel {
+    padding: 8px 10px;
+  }
+
+  .player-label,
+  .health-value,
+  .hint,
+  .turn-badge {
+    font-size: 0.72rem;
+  }
+
+  .health-track {
+    height: 10px;
+    margin: 6px 0 4px;
+  }
+}
