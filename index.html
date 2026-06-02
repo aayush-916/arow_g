@@ -103,25 +103,24 @@
     }
 
     .avatar {
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.6), 0 3px 8px rgba(53, 38, 20, 0.22);
-      background-size: 180% auto;
       background-repeat: no-repeat;
-      background-position: center 18%;
+      background-size: 150% auto;
+      background-position: center -2px;
     }
 
     .avatar-p1 {
       background-color: #ffe2bd;
-      background-image: linear-gradient(135deg, #ffbc66, var(--p1));
-      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.6), 0 0 0 2px rgba(255, 113, 74, 0.5), 0 3px 8px rgba(53, 38, 20, 0.22);
+      background-image: url("assets/ember.png");
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7), 0 0 0 2px rgba(255, 113, 74, 0.6), 0 3px 8px rgba(53, 38, 20, 0.22);
     }
 
     .avatar-p2 {
       background-color: #d7f7df;
-      background-image: linear-gradient(135deg, #9ef4b7, var(--p2));
-      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.6), 0 0 0 2px rgba(32, 174, 131, 0.5), 0 3px 8px rgba(53, 38, 20, 0.22);
+      background-image: url("assets/sage.png");
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7), 0 0 0 2px rgba(32, 174, 131, 0.6), 0 3px 8px rgba(53, 38, 20, 0.22);
     }
 
     .bar {
@@ -337,18 +336,20 @@
       100% { opacity: 0; transform: translate(-50%, -20px) scale(0.96); }
     }
 
-    /* Character-select / start overlay */
+    /* Character-select / start overlay — fixed to the viewport and scrollable
+       so the Start button is always reachable on short / portrait screens. */
     .intro-overlay {
-      position: absolute;
+      position: fixed;
       inset: 0;
-      display: grid;
-      place-items: center;
+      display: flex;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       padding: 16px;
-      z-index: 5;
+      z-index: 50;
       background:
         radial-gradient(circle at 30% 20%, rgba(255, 120, 80, 0.25), transparent 45%),
         radial-gradient(circle at 72% 24%, rgba(40, 190, 140, 0.25), transparent 45%),
-        rgba(18, 13, 8, 0.62);
+        rgba(18, 13, 8, 0.7);
       backdrop-filter: blur(6px);
       animation: fadeIn 0.4s ease;
     }
@@ -363,6 +364,9 @@
       padding: 18px 22px 22px;
       max-width: min(94vw, 720px);
       width: 100%;
+      /* margin:auto centers in the flex container yet still allows scrolling
+         when the card is taller than the viewport. */
+      margin: auto;
     }
 
     .intro-kicker {
@@ -407,7 +411,7 @@
     }
 
     .roster-art {
-      height: clamp(110px, 26vh, 200px);
+      height: clamp(96px, 22vh, 180px);
       display: grid;
       place-items: end center;
       filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.3));
@@ -507,6 +511,31 @@
         font-size: 0.74rem;
       }
     }
+
+    /* Keep the start screen compact when vertical space is tight. */
+    @media (max-height: 560px) {
+      .intro-card {
+        padding: 12px 16px 16px;
+      }
+
+      .intro-title {
+        margin: 4px 0 10px;
+        font-size: clamp(1.1rem, 3.4vw, 1.6rem);
+      }
+
+      .roster-art {
+        height: clamp(72px, 30vh, 130px);
+      }
+
+      .intro-start {
+        margin-top: 12px;
+        padding: 11px 30px;
+      }
+
+      .intro-foot {
+        margin-top: 8px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -573,13 +602,13 @@
           <h1 class="intro-title">Two archers enter. One walks away.</h1>
           <div class="intro-roster">
             <div class="roster-card roster-p1">
-              <div class="roster-art"><img id="introCharRed" alt="Ember the archer"></div>
+              <div class="roster-art"><img id="introCharRed" src="assets/ember.png" alt="Ember the archer"></div>
               <div class="roster-name">🔥 Ember</div>
               <div class="roster-tag">Player 1</div>
             </div>
             <div class="intro-vs">VS</div>
             <div class="roster-card roster-p2">
-              <div class="roster-art"><img id="introCharGreen" alt="Sage the archer"></div>
+              <div class="roster-art"><img id="introCharGreen" src="assets/sage.png" alt="Sage the archer"></div>
               <div class="roster-name">🌿 Sage</div>
               <div class="roster-tag">Player 2</div>
             </div>
@@ -1432,20 +1461,6 @@
         banner.classList.add("show");
       }
 
-      setCharacterArt(redUrl, greenUrl) {
-        if (this.introCharRed) {
-          this.introCharRed.src = redUrl;
-        }
-        if (this.introCharGreen) {
-          this.introCharGreen.src = greenUrl;
-        }
-        if (this.avatarP1) {
-          this.avatarP1.style.backgroundImage = "url(" + redUrl + ")";
-        }
-        if (this.avatarP2) {
-          this.avatarP2.style.backgroundImage = "url(" + greenUrl + ")";
-        }
-      }
     }
 
     class Game {
@@ -1513,25 +1528,21 @@
       }
 
       loadCharacterArt() {
-        const image = new Image();
-        image.onload = () => {
-          this.characterArt.image = image;
-          this.characterArt.sprites.red = this.extractCharacterSprite(image, {
-            x: 20,
-            y: 120,
-            width: 710,
-            height: 760
-          });
-          this.characterArt.sprites.green = this.extractCharacterSprite(image, {
-            x: 790,
-            y: 110,
-            width: 700,
-            height: 770
-          });
-          this.characterArt.ready = true;
-          this.publishCharacterArt();
+        // The sliced PNGs already have transparent backgrounds, so they can be
+        // drawn directly — no canvas pixel reads (which break under file://).
+        const loadSprite = (key, src) => {
+          const img = new Image();
+          img.onload = () => {
+            this.characterArt.sprites[key] = img;
+            if (this.characterArt.sprites.red && this.characterArt.sprites.green) {
+              this.characterArt.image = img;
+              this.characterArt.ready = true;
+            }
+          };
+          img.src = src;
         };
-        image.src = "assets/archers-reference.png";
+        loadSprite("red", "assets/ember.png");
+        loadSprite("green", "assets/sage.png");
       }
 
       extractCharacterSprite(image, region) {
@@ -1619,18 +1630,6 @@
           );
 
         return outputCanvas;
-      }
-
-      publishCharacterArt() {
-        try {
-          const red = this.characterArt.sprites.red;
-          const green = this.characterArt.sprites.green;
-          if (red && green) {
-            this.ui.setCharacterArt(red.toDataURL(), green.toDataURL());
-          }
-        } catch (error) {
-          // toDataURL can throw if the canvas is tainted; the canvas fallback art still works.
-        }
       }
 
       beginFromIntro() {
