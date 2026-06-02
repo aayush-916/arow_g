@@ -336,6 +336,11 @@
 
     /* Character-select / start overlay — fixed to the viewport and scrollable
        so the Start button is always reachable on short / portrait screens. */
+    /* Must out-specify .intro-overlay's display so adding `hidden` truly hides it. */
+    .intro-overlay.hidden {
+      display: none;
+    }
+
     .intro-overlay {
       position: fixed;
       inset: 0;
@@ -1556,6 +1561,8 @@
 
       hideIntro() {
         this.introOverlay.classList.add("hidden");
+        // Inline style beats any stylesheet rule — guarantees the overlay leaves.
+        this.introOverlay.style.display = "none";
       }
 
       showTurnBanner(player) {
