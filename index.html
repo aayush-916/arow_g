@@ -39,10 +39,11 @@
 
     .app {
       min-height: 100dvh;
+      height: 100dvh;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+      gap: 6px;
+      padding: max(6px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
     }
 
     .hud {
@@ -62,7 +63,7 @@
 
     .player-card,
     .center-card {
-      padding: 10px 12px;
+      padding: 6px 10px;
     }
 
     .player-head,
@@ -75,7 +76,7 @@
 
     .player-head {
       justify-content: space-between;
-      margin-bottom: 8px;
+      margin-bottom: 5px;
     }
 
     .label,
@@ -122,7 +123,7 @@
     }
 
     .bar {
-      height: 14px;
+      height: 11px;
       border-radius: 999px;
       background: rgba(63, 46, 22, 0.12);
       overflow: hidden;
@@ -146,15 +147,15 @@
     .player-meta {
       justify-content: space-between;
       gap: 12px;
-      margin-top: 6px;
-      font-size: 0.78rem;
+      margin-top: 4px;
+      font-size: 0.74rem;
       color: var(--muted);
     }
 
     .center-card {
       min-width: min(42vw, 340px);
       display: grid;
-      gap: 8px;
+      gap: 4px;
     }
 
     .center-stack {
@@ -164,24 +165,24 @@
     }
 
     .turn-pill {
-      padding: 6px 12px;
+      padding: 4px 11px;
       border-radius: 999px;
       background: rgba(255, 214, 92, 0.35);
       color: #6f4d00;
     }
 
     .stat-pill {
-      padding: 6px 10px;
+      padding: 4px 9px;
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.75);
-      font-size: 0.78rem;
+      font-size: 0.74rem;
       font-weight: 800;
     }
 
     .hint {
       text-align: center;
       color: var(--muted);
-      font-size: 0.8rem;
+      font-size: 0.74rem;
     }
 
     .controls {
@@ -198,7 +199,7 @@
       appearance: none;
       border: 0;
       border-radius: 999px;
-      padding: 11px 16px;
+      padding: 8px 15px;
       font: inherit;
       font-weight: 900;
       color: #fff9f3;
@@ -1169,6 +1170,9 @@
         this.bob = Math.random() * Math.PI * 2;
         this.knockVel = 0;   // horizontal knockback velocity (px/s)
         this.stagger = 0;    // lean/recoil when struck (0..1)
+        this.walkPhase = 0;  // stride cycle while moving
+        this.walking = false;
+        this.aimCharge = 0;  // 0..1 draw-back while aiming (set by the game)
       }
 
       setLayout(x, y, size) {
@@ -1201,14 +1205,19 @@
         const dx = this.targetX - this.x;
         if (Math.abs(dx) > 0.5) {
           this.x += Math.sign(dx) * Math.min(Math.abs(dx), speed * delta);
+          this.walking = true;
+          this.walkPhase += delta * 11;
         } else {
           this.x = this.targetX;
+          this.walking = false;
         }
         this.y = terrain.getY(this.x);
         this.shootAnim = Math.max(0, this.shootAnim - delta * 3.6);
         this.hitFlash = Math.max(0, this.hitFlash - delta * 3);
         this.stagger = Math.max(0, this.stagger - delta * 2.6);
-        this.bob += delta * 2;
+        // Aim charge eases back to neutral once the player stops drawing.
+        this.aimCharge = Math.max(0, this.aimCharge - delta * 4);
+        this.bob += delta * 2.4;
       }
 
       move(step) {
@@ -1286,14 +1295,25 @@
       }
 
       drawSpriteCharacter(ctx, isActive, terrainSlope, sprite) {
-        const bobOffset = Math.sin(this.bob) * this.size * 0.014;
         const drawHeight = this.size * 3.15;
         const drawWidth = drawHeight * (sprite.width / sprite.height);
-        const recoil = this.shootAnim * this.size * 0.16;
         const glowColor = this.id === 0 ? "rgba(255, 110, 74, 0.34)" : "rgba(71, 217, 155, 0.34)";
 
+        // --- Procedural animation ---------------------------------------------
+        // Idle breathing.
+        const breathe = 1 + Math.sin(this.bob) * 0.03;
+        const idleBob = Math.sin(this.bob) * this.size * 0.03;
+        // Walk cycle: bounce + a bit of forward/back sway while stepping.
+        const walkHop = this.walking ? -Math.abs(Math.sin(this.walkPhase)) * this.size * 0.09 : 0;
+        const walkWobble = this.walking ? Math.sin(this.walkPhase * 2) * 0.05 : 0;
+        // Draw-back when aiming, then a forward snap on release (recoil).
+        const drawBack = -this.aimCharge * 0.18;
+        const release = this.shootAnim * 0.26;
+        const staggerLean = -this.stagger * 0.16;
+        const lean = drawBack + release + walkWobble + staggerLean; // local space (>0 = forward)
+        const kickBack = this.shootAnim * this.size * 0.14; // recoil shove
+
         ctx.save();
-        ctx.translate(0, bobOffset);
 
         this.drawEllipse(ctx, this.x, this.y + 2, this.size * 0.36, this.size * 0.12, terrainSlope, "rgba(0,0,0,0.16)");
         this.drawEllipse(ctx, this.x, this.y - this.size * 0.12, this.size * 0.58, this.size * 0.24, 0, glowColor);
@@ -1307,17 +1327,14 @@
         }
 
         ctx.save();
-        ctx.translate(this.x, this.y - recoil * 0.4);
-        // Lean away from a hit, in the direction of the knockback, for a struck reaction.
-        if (this.stagger > 0) {
-          const leanDir = this.knockVel !== 0 ? Math.sign(this.knockVel) : this.facing;
-          ctx.translate(0, -drawHeight * 0.5);
-          ctx.rotate(this.stagger * 0.16 * leanDir);
-          ctx.translate(0, drawHeight * 0.5);
-        }
+        // Anchor at the feet so leans/rotations pivot naturally.
+        ctx.translate(this.x, this.y + idleBob + walkHop);
         if (this.facing < 0) {
-          ctx.scale(-1, 1);
+          ctx.scale(-1, 1); // after this, local +x always points "forward"
         }
+        ctx.rotate(lean);
+        ctx.translate(-kickBack, 0);
+        ctx.scale(1, breathe);
         ctx.drawImage(
           sprite,
           -drawWidth * 0.52,
@@ -1857,7 +1874,7 @@
       }
 
       buildPlayers(resetHealth) {
-        const size = this.clamp(this.height * 0.125, 44, 64);
+        const size = this.clamp(this.height * 0.15, 52, 78);
         const leftX = this.width * 0.16;
         const rightX = this.width * 0.84;
         const leftY = this.terrain.getY(leftX);
@@ -1998,6 +2015,12 @@
           return;
         }
         this.aimPoint = this.getPointerPosition(event);
+        // Feed the draw-back amount to the archer so the bow visibly tenses.
+        const active = this.players[this.currentPlayerIndex];
+        const bow = active.getBowAnchor(this.aimPoint);
+        const dist = Math.hypot(bow.x - this.aimPoint.x, bow.y - this.aimPoint.y);
+        const power = this.clamp(dist * this.dragScale, this.minPower, this.maxPower);
+        active.aimCharge = (power - this.minPower) / (this.maxPower - this.minPower);
       }
 
       onPointerUp(event) {
@@ -2136,6 +2159,9 @@
         }
 
         player.fire();
+        player.aimCharge = 0;
+        // Release puff at the bow for a snappier shot.
+        this.addParticles(bow.x, bow.y, "rgba(255,255,255,0.9)", 7, 60);
         this.sound.shot();
         this.ui.refresh();
       }
@@ -2632,40 +2658,47 @@
         const chargeColor = "hsl(" + hue + ", 85%, 52%)";
 
         // Predicted trajectory: simulate the real arrow physics (gravity, wind,
-        // drag) so the player can actually aim. Drawn as a fading dotted arc.
+        // drag). Only the FIRST HALF of the flight is revealed — a directional
+        // hint that still leaves the landing point to the player's skill.
         ctx.save();
         const windAccel = this.wind.getAcceleration();
-        let px = bow.x;
-        let py = bow.y;
-        let pvx = nx * power;
-        let pvy = ny * power;
         const step = 1 / 60;
         const drag = 0.05;
-        for (let i = 0; i < 110; i += 1) {
-          pvy += this.gravity * step;
-          pvx += windAccel * step;
-          const dragFactor = Math.max(0, 1 - drag * step);
-          pvx *= dragFactor;
-          pvy *= dragFactor;
-          px += pvx * step;
-          py += pvy * step;
-          if (py >= this.terrain.getY(px) || px < -20 || px > this.width + 20 || py < -260) {
-            break;
+        const path = [];
+        {
+          let px = bow.x;
+          let py = bow.y;
+          let pvx = nx * power;
+          let pvy = ny * power;
+          for (let i = 0; i < 200; i += 1) {
+            pvy += this.gravity * step;
+            pvx += windAccel * step;
+            const dragFactor = Math.max(0, 1 - drag * step);
+            pvx *= dragFactor;
+            pvy *= dragFactor;
+            px += pvx * step;
+            py += pvy * step;
+            if (py >= this.terrain.getY(px) || px < -20 || px > this.width + 20 || py < -260) {
+              break;
+            }
+            path.push({ x: px, y: py });
           }
-          if (i % 4 === 0) {
-            const fade = 1 - i / 110;
-            const r = 3.2 + fade * 1.6;
-            // High-contrast dot: dark halo + bright charge-colored core, visible on any sky.
-            ctx.globalAlpha = 0.5 + fade * 0.4;
-            ctx.fillStyle = "rgba(20, 16, 10, 0.55)";
-            ctx.beginPath();
-            ctx.arc(px, py, r + 1.4, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = chargeColor;
-            ctx.beginPath();
-            ctx.arc(px, py, r, 0, Math.PI * 2);
-            ctx.fill();
-          }
+        }
+        const shown = Math.floor(path.length * 0.5); // reveal only the first half
+        for (let i = 0; i < shown; i += 4) {
+          const point = path[i];
+          const fade = 1 - i / Math.max(1, shown);
+          const r = 3.2 + fade * 1.6;
+          // High-contrast dot: dark halo + bright charge-colored core, visible on any sky.
+          ctx.globalAlpha = 0.45 + fade * 0.45;
+          ctx.fillStyle = "rgba(20, 16, 10, 0.55)";
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, r + 1.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = chargeColor;
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, r, 0, Math.PI * 2);
+          ctx.fill();
         }
         ctx.restore();
 
