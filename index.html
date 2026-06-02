@@ -88,19 +88,40 @@
       font-size: 0.72rem;
     }
 
+    .label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .label-sub {
+      font-size: 0.6rem;
+      opacity: 0.6;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.08);
+    }
+
     .avatar {
-      width: 28px;
-      height: 28px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
-      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5);
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.6), 0 3px 8px rgba(53, 38, 20, 0.22);
+      background-size: 180% auto;
+      background-repeat: no-repeat;
+      background-position: center 18%;
     }
 
     .avatar-p1 {
-      background: linear-gradient(135deg, #ffbc66, var(--p1));
+      background-color: #ffe2bd;
+      background-image: linear-gradient(135deg, #ffbc66, var(--p1));
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.6), 0 0 0 2px rgba(255, 113, 74, 0.5), 0 3px 8px rgba(53, 38, 20, 0.22);
     }
 
     .avatar-p2 {
-      background: linear-gradient(135deg, #9ef4b7, var(--p2));
+      background-color: #d7f7df;
+      background-image: linear-gradient(135deg, #9ef4b7, var(--p2));
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.6), 0 0 0 2px rgba(32, 174, 131, 0.5), 0 3px 8px rgba(53, 38, 20, 0.22);
     }
 
     .bar {
@@ -276,6 +297,180 @@
       background: rgba(255, 255, 255, 0.95);
     }
 
+    /* Soft vignette to add depth to the battlefield */
+    .vignette {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      background: radial-gradient(circle at 50% 42%, transparent 52%, rgba(20, 14, 6, 0.28) 100%);
+      mix-blend-mode: multiply;
+    }
+
+    /* Turn-start banner */
+    .turn-banner {
+      position: absolute;
+      top: 16%;
+      left: 50%;
+      transform: translate(-50%, -8px) scale(0.9);
+      padding: 10px 26px;
+      border-radius: 999px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      font-size: clamp(1rem, 3.4vw, 1.6rem);
+      color: #fff9f3;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .turn-banner.show {
+      animation: bannerPop 1.5s ease forwards;
+    }
+
+    @keyframes bannerPop {
+      0% { opacity: 0; transform: translate(-50%, 6px) scale(0.8); }
+      18% { opacity: 1; transform: translate(-50%, -8px) scale(1.04); }
+      30% { transform: translate(-50%, -8px) scale(1); }
+      78% { opacity: 1; transform: translate(-50%, -8px) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -20px) scale(0.96); }
+    }
+
+    /* Character-select / start overlay */
+    .intro-overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      z-index: 5;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(255, 120, 80, 0.25), transparent 45%),
+        radial-gradient(circle at 72% 24%, rgba(40, 190, 140, 0.25), transparent 45%),
+        rgba(18, 13, 8, 0.62);
+      backdrop-filter: blur(6px);
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .intro-card {
+      text-align: center;
+      padding: 18px 22px 22px;
+      max-width: min(94vw, 720px);
+      width: 100%;
+    }
+
+    .intro-kicker {
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-weight: 900;
+      font-size: 0.74rem;
+      color: var(--p1);
+    }
+
+    .intro-title {
+      margin: 6px 0 16px;
+      font-size: clamp(1.4rem, 4.2vw, 2.3rem);
+      line-height: 1.1;
+    }
+
+    .intro-roster {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .roster-card {
+      border-radius: 20px;
+      padding: 10px 8px 12px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.12));
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      transition: transform 220ms ease;
+    }
+
+    .roster-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .roster-p1 {
+      box-shadow: 0 0 0 2px rgba(255, 113, 74, 0.55), 0 14px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .roster-p2 {
+      box-shadow: 0 0 0 2px rgba(32, 174, 131, 0.55), 0 14px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .roster-art {
+      height: clamp(110px, 26vh, 200px);
+      display: grid;
+      place-items: end center;
+      filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.3));
+    }
+
+    .roster-art img {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+      animation: floatChar 3.4s ease-in-out infinite;
+    }
+
+    .roster-p2 .roster-art img {
+      animation-delay: -1.7s;
+    }
+
+    @keyframes floatChar {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .roster-name {
+      font-weight: 900;
+      font-size: 1.1rem;
+      margin-top: 6px;
+    }
+
+    .roster-tag {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .intro-vs {
+      font-weight: 900;
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .intro-start {
+      margin-top: 18px;
+      padding: 14px 40px;
+      font-size: 1.05rem;
+      background: linear-gradient(135deg, #ff8a4a, #ff5f73);
+      box-shadow: 0 12px 26px rgba(255, 95, 74, 0.4);
+      animation: pulseBtn 1.8s ease-in-out infinite;
+    }
+
+    @keyframes pulseBtn {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .intro-foot {
+      margin: 12px 0 0;
+      font-size: 0.74rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
     @media (max-width: 940px) {
       .hud {
         grid-template-columns: 1fr 1fr;
@@ -319,8 +514,8 @@
     <section class="hud">
       <div class="player-card card">
         <div class="player-head">
-          <div class="label">Player 1</div>
-          <div class="avatar avatar-p1"></div>
+          <div class="label">🔥 Ember <span class="label-sub">P1</span></div>
+          <div class="avatar avatar-p1" id="avatarP1"></div>
         </div>
         <div class="bar">
           <div class="fill p1" id="healthP1"></div>
@@ -343,8 +538,8 @@
 
       <div class="player-card card">
         <div class="player-head">
-          <div class="label">Player 2</div>
-          <div class="avatar avatar-p2"></div>
+          <div class="avatar avatar-p2" id="avatarP2"></div>
+          <div class="label">🌿 Sage <span class="label-sub">P2</span></div>
         </div>
         <div class="bar">
           <div class="fill p2" id="healthP2"></div>
@@ -369,6 +564,30 @@
 
     <section class="game-shell">
       <canvas id="gameCanvas" aria-label="Two player archery duel"></canvas>
+      <div class="vignette"></div>
+      <div class="turn-banner" id="turnBanner"></div>
+
+      <div class="intro-overlay" id="introOverlay">
+        <div class="intro-card card">
+          <div class="intro-kicker">⚔ Bow Blitz Duel</div>
+          <h1 class="intro-title">Two archers enter. One walks away.</h1>
+          <div class="intro-roster">
+            <div class="roster-card roster-p1">
+              <div class="roster-art"><img id="introCharRed" alt="Ember the archer"></div>
+              <div class="roster-name">🔥 Ember</div>
+              <div class="roster-tag">Player 1</div>
+            </div>
+            <div class="intro-vs">VS</div>
+            <div class="roster-card roster-p2">
+              <div class="roster-art"><img id="introCharGreen" alt="Sage the archer"></div>
+              <div class="roster-name">🌿 Sage</div>
+              <div class="roster-tag">Player 2</div>
+            </div>
+          </div>
+          <button type="button" class="intro-start" id="startButton">Start Duel</button>
+          <p class="intro-foot">Two players · one device · rotate to landscape</p>
+        </div>
+      </div>
 
       <div class="overlay hidden" id="winnerOverlay">
         <div class="overlay-card card">
@@ -1134,7 +1353,15 @@
         this.moveLeftButton = document.getElementById("moveLeftButton");
         this.moveRightButton = document.getElementById("moveRightButton");
         this.soundButton = document.getElementById("soundButton");
+        this.introOverlay = document.getElementById("introOverlay");
+        this.startButton = document.getElementById("startButton");
+        this.turnBanner = document.getElementById("turnBanner");
+        this.introCharRed = document.getElementById("introCharRed");
+        this.introCharGreen = document.getElementById("introCharGreen");
+        this.avatarP1 = document.getElementById("avatarP1");
+        this.avatarP2 = document.getElementById("avatarP2");
 
+        this.startButton.addEventListener("click", () => this.game.beginFromIntro());
         this.restartButton.addEventListener("click", () => this.game.restart());
         this.rematchButton.addEventListener("click", () => this.game.restart());
         this.moveLeftButton.addEventListener("click", () => this.game.tryMoveActivePlayer(-1));
@@ -1187,6 +1414,38 @@
       showRotateNotice(isLandscape) {
         this.rotateOverlay.classList.toggle("hidden", isLandscape);
       }
+
+      hideIntro() {
+        this.introOverlay.classList.add("hidden");
+      }
+
+      showTurnBanner(player) {
+        const banner = this.turnBanner;
+        const isRed = player.id === 0;
+        banner.textContent = (isRed ? "🔥 " : "🌿 ") + player.name + " — go!";
+        banner.style.background = isRed
+          ? "linear-gradient(135deg, #ff8a4a, #ff5f73)"
+          : "linear-gradient(135deg, #2fce9b, #1b9e74)";
+        banner.classList.remove("show");
+        // Force reflow so the animation can replay on every turn.
+        void banner.offsetWidth;
+        banner.classList.add("show");
+      }
+
+      setCharacterArt(redUrl, greenUrl) {
+        if (this.introCharRed) {
+          this.introCharRed.src = redUrl;
+        }
+        if (this.introCharGreen) {
+          this.introCharGreen.src = greenUrl;
+        }
+        if (this.avatarP1) {
+          this.avatarP1.style.backgroundImage = "url(" + redUrl + ")";
+        }
+        if (this.avatarP2) {
+          this.avatarP2.style.backgroundImage = "url(" + greenUrl + ")";
+        }
+      }
     }
 
     class Game {
@@ -1232,6 +1491,9 @@
         this.lastThreeSecondBeep = null;
         this.lastTime = 0;
         this.renderError = null;
+        this.introVisible = true;
+        this.confetti = [];
+        this.ambient = [];
 
         this.loadCharacterArt();
         this.bindEvents();
@@ -1267,6 +1529,7 @@
             height: 770
           });
           this.characterArt.ready = true;
+          this.publishCharacterArt();
         };
         image.src = "assets/archers-reference.png";
       }
@@ -1358,6 +1621,31 @@
         return outputCanvas;
       }
 
+      publishCharacterArt() {
+        try {
+          const red = this.characterArt.sprites.red;
+          const green = this.characterArt.sprites.green;
+          if (red && green) {
+            this.ui.setCharacterArt(red.toDataURL(), green.toDataURL());
+          }
+        } catch (error) {
+          // toDataURL can throw if the canvas is tainted; the canvas fallback art still works.
+        }
+      }
+
+      beginFromIntro() {
+        if (!this.introVisible) {
+          return;
+        }
+        this.introVisible = false;
+        this.ui.hideIntro();
+        this.sound.ensure();
+        this.timeRemaining = this.turnDuration;
+        this.lastThreeSecondBeep = null;
+        this.ui.showTurnBanner(this.players[this.currentPlayerIndex]);
+        this.ui.refresh();
+      }
+
       resize() {
         const rect = this.canvas.getBoundingClientRect();
         const width = Math.max(1, Math.round(rect.width || this.canvas.clientWidth || this.canvas.offsetWidth || 0));
@@ -1404,6 +1692,7 @@
         this.obstacles = [];
         this.floatingTexts = [];
         this.particles = [];
+        this.confetti = [];
         this.winner = null;
         this.shake = 0;
         this.lastThreeSecondBeep = null;
@@ -1416,6 +1705,9 @@
         this.assignArrowType();
         this.players[this.currentPlayerIndex].startTurn();
         this.ui.hideWinner();
+        if (!this.introVisible) {
+          this.ui.showTurnBanner(this.players[this.currentPlayerIndex]);
+        }
         this.ui.refresh();
       }
 
@@ -1469,6 +1761,24 @@
             scale: 0.8 + Math.random() * 0.7
           });
         }
+        this.generateAmbient();
+      }
+
+      generateAmbient() {
+        // Drifting motes: glowing fireflies at night, soft pollen by day.
+        this.ambient = [];
+        const count = 26;
+        for (let i = 0; i < count; i += 1) {
+          this.ambient.push({
+            x: Math.random() * this.width,
+            y: this.height * (0.2 + Math.random() * 0.7),
+            size: 1 + Math.random() * 2.2,
+            driftX: -6 + Math.random() * 12,
+            driftY: -4 - Math.random() * 8,
+            phase: Math.random() * Math.PI * 2,
+            twinkle: 0.6 + Math.random() * 1.6
+          });
+        }
       }
 
       makeMountainLayer(index) {
@@ -1501,7 +1811,7 @@
           this.players = [
             new Player({
               id: 0,
-              name: "Player 1",
+              name: "Ember",
               color: "#ff714a",
               accent: "#ffd35d",
               skin: "#ffd2b1",
@@ -1513,7 +1823,7 @@
             }),
             new Player({
               id: 1,
-              name: "Player 2",
+              name: "Sage",
               color: "#20ae83",
               accent: "#7bf0bf",
               skin: "#ffd6ba",
@@ -1578,6 +1888,9 @@
         if (this.turnNumber > 1 && this.turnNumber % 4 === 0) {
           this.generateObstacles(this.getObstacleCount());
         }
+        if (!this.introVisible) {
+          this.ui.showTurnBanner(this.players[index]);
+        }
         this.ui.refresh();
       }
 
@@ -1599,7 +1912,7 @@
       }
 
       onPointerDown(event) {
-        if (!this.isLandscape() || this.winner || this.arrows.length) {
+        if (this.introVisible || !this.isLandscape() || this.winner || this.arrows.length) {
           return;
         }
         const active = this.players[this.currentPlayerIndex];
@@ -1900,13 +2213,14 @@
       finishMatch(winner) {
         this.winner = winner;
         this.arrows = [];
+        this.spawnConfetti();
         this.ui.showWinner(winner);
         this.ui.refresh();
         this.sound.win();
       }
 
       updateTimer(delta) {
-        if (this.winner || this.arrows.length || !this.isLandscape()) {
+        if (this.introVisible || this.winner || this.arrows.length || !this.isLandscape()) {
           return;
         }
 
@@ -2002,7 +2316,48 @@
           return particle.life > 0;
         });
 
+        for (const mote of this.ambient) {
+          mote.phase += delta * mote.twinkle;
+          mote.x += mote.driftX * delta;
+          mote.y += mote.driftY * delta;
+          if (mote.y < this.height * 0.12) {
+            mote.y = this.height * 0.92;
+            mote.x = Math.random() * this.width;
+          }
+          if (mote.x < -10) {
+            mote.x = this.width + 10;
+          } else if (mote.x > this.width + 10) {
+            mote.x = -10;
+          }
+        }
+
+        this.confetti = this.confetti.filter((piece) => {
+          piece.life -= delta * 0.5;
+          piece.vy += 220 * delta;
+          piece.x += piece.vx * delta;
+          piece.y += piece.vy * delta;
+          piece.spin += piece.spinSpeed * delta;
+          return piece.life > 0 && piece.y < this.height + 30;
+        });
+
         this.shake = Math.max(0, this.shake - delta * 16);
+      }
+
+      spawnConfetti() {
+        const colors = ["#ff714a", "#ffd35d", "#20ae83", "#7bf0bf", "#7fc0ef", "#ff8fb1"];
+        for (let i = 0; i < 90; i += 1) {
+          this.confetti.push({
+            x: Math.random() * this.width,
+            y: -20 - Math.random() * this.height * 0.3,
+            vx: -40 + Math.random() * 80,
+            vy: 40 + Math.random() * 120,
+            size: 4 + Math.random() * 6,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            spin: Math.random() * Math.PI,
+            spinSpeed: -6 + Math.random() * 12,
+            life: 1.6 + Math.random() * 1.4
+          });
+        }
       }
 
       drawSky() {
@@ -2067,6 +2422,22 @@
         ctx.restore();
       }
 
+      drawAmbient() {
+        const ctx = this.ctx;
+        const night = this.theme && this.theme.night;
+        const baseColor = night ? "255, 233, 150" : "255, 255, 255";
+        ctx.save();
+        for (const mote of this.ambient) {
+          const glow = 0.35 + 0.45 * (0.5 + 0.5 * Math.sin(mote.phase));
+          ctx.globalAlpha = night ? glow : glow * 0.55;
+          ctx.fillStyle = "rgba(" + baseColor + ", 1)";
+          ctx.beginPath();
+          ctx.arc(mote.x, mote.y, mote.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
       drawDebugOverlay(message) {
         const ctx = this.ctx;
         ctx.save();
@@ -2111,21 +2482,44 @@
         const distance = Math.max(1, Math.hypot(dx, dy));
         const nx = dx / distance;
         const ny = dy / distance;
+        // Charge level mirrors the real shot power so players can feel the draw strength.
+        const power = this.clamp(distance * this.dragScale, this.minPower, this.maxPower);
+        const charge = (power - this.minPower) / (this.maxPower - this.minPower);
         const strength = this.clamp(distance / 90, 0.2, 1);
         const length = 28 + strength * 30;
+        // Green (weak) -> amber -> red (max).
+        const hue = 130 - charge * 130;
+        const chargeColor = "hsl(" + hue + ", 85%, 52%)";
 
         ctx.save();
-        ctx.strokeStyle = "rgba(255,255,255,0.92)";
-        ctx.lineWidth = 3;
+
+        // Power ring around the bow: a sweeping arc that fills as you pull back.
+        const ringRadius = 26;
+        ctx.lineWidth = 5;
         ctx.lineCap = "round";
+        ctx.strokeStyle = "rgba(255,255,255,0.28)";
+        ctx.beginPath();
+        ctx.arc(bow.x, bow.y, ringRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = chargeColor;
+        ctx.beginPath();
+        ctx.arc(bow.x, bow.y, ringRadius, -Math.PI / 2, -Math.PI / 2 + charge * Math.PI * 2);
+        ctx.stroke();
+
+        // Aim arrow showing draw direction.
+        ctx.strokeStyle = "rgba(255,255,255,0.95)";
+        ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.moveTo(bow.x, bow.y);
         ctx.lineTo(bow.x + nx * length, bow.y + ny * length);
         ctx.stroke();
-        ctx.fillStyle = "rgba(255,255,255,0.95)";
+        ctx.fillStyle = chargeColor;
         ctx.beginPath();
-        ctx.arc(bow.x + nx * length, bow.y + ny * length, 5, 0, Math.PI * 2);
+        ctx.arc(bow.x + nx * length, bow.y + ny * length, 6, 0, Math.PI * 2);
         ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.95)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
         ctx.restore();
       }
 
@@ -2151,6 +2545,16 @@
           ctx.fillText(popup.text, popup.x, popup.y);
           ctx.restore();
         }
+
+        for (const piece of this.confetti) {
+          ctx.save();
+          ctx.globalAlpha = this.clamp(piece.life, 0, 1);
+          ctx.translate(piece.x, piece.y);
+          ctx.rotate(piece.spin);
+          ctx.fillStyle = piece.color;
+          ctx.fillRect(-piece.size * 0.5, -piece.size * 0.35, piece.size, piece.size * 0.7);
+          ctx.restore();
+        }
       }
 
       draw() {
@@ -2169,6 +2573,7 @@
           this.drawSky();
           this.drawClouds();
           this.drawMountains();
+          this.drawAmbient();
           this.terrain.draw(ctx);
           for (const obstacle of this.obstacles) {
             obstacle.draw(ctx, this.theme);
