@@ -1,5 +1,5 @@
 /* Bow Blitz Duel — service worker (offline support for the installable PWA). */
-const CACHE = "bow-blitz-v2";
+const CACHE = "bow-blitz-v3";
 
 // The game is fully playable from index.html alone (art is embedded as base64),
 // so index.html is the one essential asset; the rest are best-effort.
@@ -36,22 +36,26 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Page loads: try the network, but fall back to the cached app shell offline.
+  // Page loads (including launching the installed app): serve the cached app
+  // shell INSTANTLY, then refresh the cache in the background. This is what makes
+  // the installed PWA open reliably on every tap instead of hanging on the
+  // network and needing several tries.
   if (req.mode === "navigate") {
     event.respondWith((async () => {
-      try {
-        const fresh = await fetch(req);
-        const cache = await caches.open(CACHE);
-        cache.put(req, fresh.clone()).catch(() => {});
-        return fresh;
-      } catch (err) {
-        return (
-          (await caches.match(req)) ||
-          (await caches.match("./index.html")) ||
-          (await caches.match("./")) ||
-          Response.error()
-        );
-      }
+      const cached =
+        (await caches.match("./index.html")) ||
+        (await caches.match(req)) ||
+        (await caches.match("./"));
+
+      const network = fetch(req)
+        .then((fresh) => {
+          caches.open(CACHE).then((cache) => cache.put("./index.html", fresh.clone())).catch(() => {});
+          return fresh;
+        })
+        .catch(() => null);
+
+      // Cached first (instant launch); only wait on the network if nothing cached yet.
+      return cached || (await network) || Response.error();
     })());
     return;
   }

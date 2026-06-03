@@ -1785,6 +1785,9 @@
         }
         this.introVisible = false;
         this.ui.hideIntro();
+        // Go immersive on the Start tap (a user gesture — the reliable way to do
+        // this, rather than forcing fullscreen at launch which made the app flaky).
+        this.enterImmersive();
         try { this.sound.ensure(); } catch (error) { /* audio is optional */ }
         this.timeRemaining = this.turnDuration;
         this.lastThreeSecondBeep = null;
@@ -1793,6 +1796,23 @@
           this.ui.showTurnBanner(active);
         }
         this.ui.refresh();
+      }
+
+      enterImmersive() {
+        // All best-effort; failures are fine (e.g. desktop, or already fullscreen).
+        try {
+          const el = document.documentElement;
+          if (el.requestFullscreen) {
+            el.requestFullscreen({ navigationUI: "hide" }).catch(() => {});
+          } else if (el.webkitRequestFullscreen) {
+            el.webkitRequestFullscreen();
+          }
+        } catch (error) { /* ignore */ }
+        try {
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock("landscape").catch(() => {});
+          }
+        } catch (error) { /* ignore */ }
       }
 
       resize() {
