@@ -1293,32 +1293,34 @@
         }
       }
 
+      // Hitboxes aligned to the drawn sprite, which stands from the feet (this.y)
+      // up to roughly this.y - size*3.0. Generous on purpose so shots register.
       get headCenter() {
         return {
           x: this.x,
-          y: this.y - this.size * 1.9
+          y: this.y - this.size * 2.42
         };
       }
 
       get headRadius() {
-        return this.size * 0.17;
+        return this.size * 0.52;
       }
 
       get bodyRect() {
         return {
-          x: this.x - this.size * 0.24,
-          y: this.y - this.size * 1.6,
-          width: this.size * 0.48,
-          height: this.size * 0.88
+          x: this.x - this.size * 0.5,
+          y: this.y - this.size * 2.05,
+          width: this.size * 1.0,
+          height: this.size * 1.0
         };
       }
 
       get legRect() {
         return {
-          x: this.x - this.size * 0.2,
-          y: this.y - this.size * 0.72,
-          width: this.size * 0.4,
-          height: this.size * 0.62
+          x: this.x - this.size * 0.42,
+          y: this.y - this.size * 1.1,
+          width: this.size * 0.84,
+          height: this.size * 1.1
         };
       }
 
@@ -1929,7 +1931,9 @@
       }
 
       buildPlayers(resetHealth) {
-        const size = this.clamp(this.height * 0.15, 52, 78);
+        // Proportional to screen height (~30% of height per archer) and also
+        // capped by width, so it never looks oversized on a small mobile viewport.
+        const size = this.clamp(Math.min(this.height * 0.092, this.width * 0.062), 30, 72);
         const leftX = this.width * 0.16;
         const rightX = this.width * 0.84;
         const leftY = this.terrain.getY(leftX);
@@ -2509,6 +2513,26 @@
         this.shake = Math.max(0, this.shake - delta * 16);
       }
 
+      drawHitboxes() {
+        const ctx = this.ctx;
+        ctx.save();
+        ctx.lineWidth = 2;
+        for (const player of this.players) {
+          const head = player.headCenter;
+          ctx.strokeStyle = "rgba(255,0,0,0.9)";
+          ctx.beginPath();
+          ctx.arc(head.x, head.y, player.headRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          const body = player.bodyRect;
+          ctx.strokeStyle = "rgba(0,120,255,0.9)";
+          ctx.strokeRect(body.x, body.y, body.width, body.height);
+          const legs = player.legRect;
+          ctx.strokeStyle = "rgba(0,200,0,0.9)";
+          ctx.strokeRect(legs.x, legs.y, legs.width, legs.height);
+        }
+        ctx.restore();
+      }
+
       drawStuckArrows() {
         const ctx = this.ctx;
         for (const stuck of this.stuckArrows) {
@@ -2864,6 +2888,9 @@
             arrow.draw(ctx);
           }
           this.drawEffects();
+          if (window.__DEBUG_HITS) {
+            this.drawHitboxes();
+          }
           this.renderError = null;
         } catch (error) {
           this.renderError = error;
