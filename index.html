@@ -4,6 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
   <title>Bow Blitz Duel</title>
+
+  <!-- PWA: installable, offline-capable web app -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#ff714a">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-512-any.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Bow Blitz">
+
   <style>
     :root {
       --cream: rgba(255, 249, 239, 0.9);
@@ -473,13 +484,31 @@
       text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
 
-    .intro-start {
+    .intro-actions {
       margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .intro-start {
       padding: 14px 40px;
       font-size: 1.05rem;
       background: linear-gradient(135deg, #ff8a4a, #ff5f73);
       box-shadow: 0 12px 26px rgba(255, 95, 74, 0.4);
       animation: pulseBtn 1.8s ease-in-out infinite;
+    }
+
+    .intro-install {
+      padding: 14px 26px;
+      font-size: 0.95rem;
+      background: linear-gradient(135deg, #2f6f8f, #1f9e74);
+      box-shadow: 0 12px 26px rgba(31, 158, 116, 0.34);
+    }
+
+    .intro-install.hidden {
+      display: none;
     }
 
     @keyframes pulseBtn {
@@ -672,7 +701,10 @@
               <div class="roster-tag">Player 2</div>
             </div>
           </div>
-          <button type="button" class="intro-start" id="startButton">Start Duel</button>
+          <div class="intro-actions">
+            <button type="button" class="intro-start" id="startButton">Start Duel</button>
+            <button type="button" class="intro-install hidden" id="installButton">⬇ Install App</button>
+          </div>
           <p class="intro-foot">Two players · one device · rotate to landscape</p>
         </div>
       </div>
@@ -2919,6 +2951,69 @@
     }
 
     new Game(document.getElementById("gameCanvas"));
+  </script>
+
+  <script>
+    // ---- PWA: service worker + install button -----------------------------
+    (function () {
+      const isHttp = location.protocol === "http:" || location.protocol === "https:";
+
+      // Register the service worker (needs http/https — won't run from file://).
+      if ("serviceWorker" in navigator && isHttp) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("sw.js").catch(function () {
+            // Offline support is optional; ignore registration failures.
+          });
+        });
+      }
+
+      const installButton = document.getElementById("installButton");
+      let deferredPrompt = null;
+
+      // Already installed (running standalone)? Never show the button.
+      const standalone =
+        window.matchMedia("(display-mode: standalone)").matches ||
+        window.matchMedia("(display-mode: fullscreen)").matches ||
+        window.navigator.standalone === true;
+
+      window.addEventListener("beforeinstallprompt", function (event) {
+        event.preventDefault();
+        deferredPrompt = event;
+        if (installButton && !standalone) {
+          installButton.classList.remove("hidden");
+        }
+      });
+
+      if (installButton) {
+        installButton.addEventListener("click", function () {
+          if (!deferredPrompt) {
+            return;
+          }
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.finally(function () {
+            deferredPrompt = null;
+            installButton.classList.add("hidden");
+          });
+        });
+      }
+
+      window.addEventListener("appinstalled", function () {
+        deferredPrompt = null;
+        if (installButton) {
+          installButton.classList.add("hidden");
+        }
+      });
+
+      // iOS Safari has no beforeinstallprompt — guide the user to Add to Home Screen.
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      if (isIOS && installButton && !standalone) {
+        installButton.classList.remove("hidden");
+        installButton.textContent = "⬇ Add to Home Screen";
+        installButton.addEventListener("click", function () {
+          alert("To install: tap the Share button, then \"Add to Home Screen\".");
+        });
+      }
+    })();
   </script>
 </body>
 </html>

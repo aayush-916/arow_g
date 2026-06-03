@@ -1,0 +1,19 @@
+{
+  "name": "Bow Blitz Duel",
+  "short_name": "Bow Blitz",
+  "description": "A two-player archery duel — share one phone in landscape and out-shoot your rival.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "/bow-blitz-duel/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#1e3057",
+  "theme_color": "#ff714a",
+  "categories": ["games"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512-any.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
