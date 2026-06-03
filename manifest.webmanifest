@@ -2,7 +2,7 @@
   "name": "Bow Blitz Duel",
   "short_name": "Bow Blitz",
   "description": "A two-player archery duel — share one phone in landscape and out-shoot your rival.",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#1e3057",
